@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokédex Grid</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <h1 class="title">Pokédex</h1>
+    <input
+      type="search"
+      id="search"
+      class="search"
+      placeholder="Search Pokémon by name..."
+      aria-label="Search Pokémon by name"
+      autocomplete="off"
+    >
+  </header>
+
+  <main>
+    <p id="status" class="status" role="status">Loading Pokémon...</p>
+    <section id="grid" class="grid" aria-live="polite"></section>
+
+    <nav class="pagination">
+      <button id="prev" class="page-btn" disabled>&larr; Previous</button>
+      <span id="page-info" class="page-info"></span>
+      <button id="next" class="page-btn" disabled>Next &rarr;</button>
+    </nav>
+  </main>
+
+  <div id="message" class="message" role="alert" hidden></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
