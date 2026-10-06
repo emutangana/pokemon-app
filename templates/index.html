@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon Flask API</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: linear-gradient(160deg, #1e1e2f, #2b2d42);
+      color: #f1f1f1;
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 24px;
+      background: #e3350d;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    header h1 { font-size: 1.6rem; }
+    header p { font-size: 0.9rem; opacity: 0.9; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.3);
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #aaa;
+    }
+
+    .dot.ok { background: #4ade80; box-shadow: 0 0 8px #4ade80; animation: pulse 1.6s infinite; }
+    .dot.down { background: #f87171; }
+
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+      display: grid;
+      gap: 24px;
+    }
+
+    section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    h2 { font-size: 1.15rem; margin-bottom: 14px; }
+
+    .endpoints { list-style: none; display: grid; gap: 8px; }
+
+    .endpoints li {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .method {
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: #3b4cca;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    code { font-family: Consolas, "Courier New", monospace; color: #ffcb05; }
+    .desc { display: block; font-size: 0.8rem; opacity: 0.75; margin-top: 2px; }
+
+    a.try {
+      color: #2a2a2a;
+      background: #ffcb05;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 999px;
+    }
+
+    a.try:hover { background: #fff; }
+
+    form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+
+    input {
+      flex: 1;
+      min-width: 180px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 999px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    input:focus { box-shadow: 0 0 0 3px #ffcb05; }
+
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 999px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #ffcb05;
+      color: #2a2a2a;
+    }
+
+    button.secondary { background: #3b4cca; color: #fff; }
+    button:active { transform: scale(0.96); }
+
+    .result {
+      display: grid;
+      grid-template-columns: minmax(200px, 260px) 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px;
+      border-radius: 16px;
+      background: linear-gradient(160deg, #3b4cca, #2b2d42 130%);
+      text-align: center;
+      animation: pop-in 0.3s ease;
+    }
+
+    .card img { width: 140px; height: 140px; object-fit: contain; }
+    .card h3 { text-transform: capitalize; }
+    .card .types span {
+      display: inline-block;
+      margin: 2px;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.3);
+      font-size: 0.75rem;
+      text-transform: capitalize;
+    }
+
+    .card .msg { font-size: 0.85rem; color: #ffcb05; }
+
+    pre {
+      overflow: auto;
+      max-height: 340px;
+      padding: 14px;
+      border-radius: 12px;
+      background: #14141f;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: #c8f7c5;
+    }
+
+    .hint { font-size: 0.85rem; opacity: 0.75; }
+
+    footer { text-align: center; font-size: 0.8rem; opacity: 0.6; padding-bottom: 24px; }
+
+    @keyframes pulse { 50% { opacity: 0.4; } }
+    @keyframes pop-in { from { opacity: 0; transform: scale(0.92); } }
+
+    @media (max-width: 640px) {
+      header { flex-direction: column; align-items: flex-start; }
+      .result { grid-template-columns: 1fr; }
+      .endpoints li { grid-template-columns: auto 1fr; }
+      a.try { grid-column: 1 / -1; justify-self: start; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Pokémon Flask API</h1>
+      <p>A Python Flask service built on PokéAPI · by {{ owner }}</p>
+    </div>
+    <span class="pill"><span id="dot" class="dot"></span><span id="health">Checking…</span></span>
+  </header>
+
+  <main>
+    <section>
+      <h2>Endpoints</h2>
+      <ul class="endpoints">
+        <li>
+          <span class="method">GET</span>
+          <div><code>/name</code><span class="desc">The owner of this service</span></div>
+          <a class="try" href="/name">Try</a>
+        </li>
+        <li>
+          <span class="method">GET</span>
+          <div><code>/health</code><span class="desc">Status, uptime and cache size</span></div>
+          <a class="try" href="/health">Try</a>
+        </li>
+        <li>
+          <span class="method">GET</span>
+          <div><code>/api/pokemon?limit=20&amp;offset=0</code><span class="desc">A page of Pokémon with full details (limit up to 50)</span></div>
+          <a class="try" href="/api/pokemon?limit=20&offset=0">Try</a>
+        </li>
+        <li>
+          <span class="method">GET</span>
+          <div><code>/api/pokemon/&lt;name or id&gt;</code><span class="desc">One Pokémon: types, abilities, stats, image</span></div>
+          <a class="try" href="/api/pokemon/pikachu">Try</a>
+        </li>
+        <li>
+          <span class="method">GET</span>
+          <div><code>/api/random</code><span class="desc">A random Pokémon</span></div>
+          <a class="try" href="/api/random">Try</a>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Try it live</h2>
+      <form id="lookup">
+        <input id="query" placeholder="Name or id, e.g. pikachu or 25" aria-label="Pokémon name or id" autocomplete="off">
+        <button type="submit">Look up</button>
+        <button type="button" id="random" class="secondary">Random</button>
+      </form>
+      <div id="output"><p class="hint">Search for a Pokémon to see this API's JSON response.</p></div>
+    </section>
+  </main>
+
+  <footer>Data from PokéAPI · Responses are cached for an hour</footer>
+
+  <script>
+    const output = document.getElementById("output");
+
+    async function checkHealth() {
+      const dot = document.getElementById("dot");
+      const label = document.getElementById("health");
+      try {
+        const res = await fetch("/health");
+        const data = await res.json();
+        dot.className = "dot ok";
+        label.textContent = `Online · up ${data.uptime_seconds}s`;
+      } catch {
+        dot.className = "dot down";
+        label.textContent = "Offline";
+      }
+    }
+
+    async function show(path) {
+      output.innerHTML = '<p class="hint">Loading…</p>';
+      let res, data;
+      try {
+        res = await fetch(path);
+        data = await res.json();
+      } catch {
+        output.innerHTML = '<p class="hint">Could not reach the API. Please try again.</p>';
+        return;
+      }
+      output.innerHTML = "";
+
+      const json = document.createElement("pre");
+      json.textContent = `GET ${path}  →  ${res.status}\n\n` + JSON.stringify(data, null, 2);
+
+      if (!res.ok) {
+        output.appendChild(json);
+        return;
+      }
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const img = document.createElement("img");
+      img.src = data.image;
+      img.alt = data.name;
+
+      const title = document.createElement("h3");
+      title.textContent = `#${String(data.id).padStart(3, "0")} ${data.name}`;
+
+      const types = document.createElement("div");
+      types.className = "types";
+      data.types.forEach((type) => {
+        const badge = document.createElement("span");
+        badge.textContent = type;
+        types.appendChild(badge);
+      });
+
+      const msg = document.createElement("p");
+      msg.className = "msg";
+      msg.textContent = data.message;
+
+      card.append(img, title, types, msg);
+
+      const result = document.createElement("div");
+      result.className = "result";
+      result.append(card, json);
+      output.appendChild(result);
+    }
+
+    document.getElementById("lookup").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const query = document.getElementById("query").value.trim().toLowerCase();
+      if (query) show(`/api/pokemon/${encodeURIComponent(query)}`);
+    });
+
+    document.getElementById("random").addEventListener("click", () => show("/api/random"));
+
+    checkHealth();
+    setInterval(checkHealth, 30000);
+  </script>
+</body>
+</html>
